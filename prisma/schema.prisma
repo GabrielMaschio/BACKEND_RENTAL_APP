@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  customer_id Int      @id @default(autoincrement())
+  name        String
+  email       String   @unique
+  phone       String
+  password    String
+  createdAt   DateTime @default(now())
+  role        String   @default("customer")
+  Rental      Rental[]
+}
+
+model Car {
+  car_id        Int      @id @default(autoincrement())
+  name          String
+  brand         String
+  license_plate String   @unique
+  year          String
+  rental_price  Decimal  @db.Decimal(10, 2)
+  category_fk   Int
+  Rental        Rental[]
+
+  category Category @relation(fields: [category_fk], references: [category_id])
+}
+
+model Rental {
+  rental_id   Int      @id @default(autoincrement())
+  customer_fk Int
+  car_fk      Int
+  rental_days Int
+  start_date  DateTime
+  end_date    DateTime
+  total_price Decimal  @db.Decimal(10, 2)
+  status      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  customer Customer @relation(fields: [customer_fk], references: [customer_id])
+  car      Car      @relation(fields: [car_fk], references: [car_id])
+}
+
+model Category {
+  category_id Int    @id @default(autoincrement())
+  name        String @unique
+  cars        Car[]
+}
